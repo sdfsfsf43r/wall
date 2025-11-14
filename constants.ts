@@ -1,4 +1,3 @@
-
 import { MultilingualQuote } from './types';
 
 export const UDEMY_COURSE_URL = 'https://www.udemy.com/course/unrealcourse/learn/';

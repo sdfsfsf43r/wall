@@ -27,17 +27,20 @@ export const ControlPanel: React.FC<ControlPanelProps> = (props) => {
     <>
       <div className="fixed bottom-5 w-full max-w-5xl px-4">
         <div className="relative flex items-center justify-between gap-6 rounded-2xl border border-white/20 bg-black/30 p-4 shadow-2xl backdrop-blur-xl">
-          <div className="flex items-center gap-4">
-            <img src={COURSE_DETAILS.thumbnail} alt="Course Thumbnail" className="h-20 w-32 rounded-lg object-cover" />
-            <div>
-              <h2 className="text-lg font-bold">{COURSE_DETAILS.title}</h2>
+          
+          <div className="flex flex-1 items-center gap-4 min-w-0">
+            <img src={COURSE_DETAILS.thumbnail} alt="Course Thumbnail" className="h-20 w-32 rounded-lg object-cover flex-shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold truncate">{COURSE_DETAILS.title}</h2>
               <p className="text-sm text-white/70 hidden md:block">{COURSE_DETAILS.description}</p>
             </div>
           </div>
-          <div className="flex-1 max-w-xs">
+
+          <div className="w-72 flex-shrink-0">
             <ProgressTracker progress={props.progress} />
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-shrink-0 items-center gap-2">
             <a href={UDEMY_COURSE_URL} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-sm font-semibold">Open Course</a>
             <button onClick={props.onNextBackground} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-semibold">Next BG</button>
             <button onClick={props.onLanguageToggle} className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-bold uppercase">{props.currentLanguage}</button>
@@ -45,6 +48,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                 <SettingsIcon />
             </button>
           </div>
+
         </div>
       </div>
       <SettingsModal
