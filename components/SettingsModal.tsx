@@ -10,6 +10,16 @@ interface SettingsModalProps {
   onExport: () => void;
 }
 
+const formatSeconds = (s: number): string => {
+  if (s < 3600) {
+      const minutes = s / 60;
+      return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+  }
+  const hours = s / 3600;
+  return `${hours} hour${hours > 1 ? 's' : ''}`;
+};
+
+
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
@@ -51,14 +61,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="space-y-6">
           <div>
             <label htmlFor="interval" className="block text-sm font-medium text-white/80 mb-2">
-              Background Change Interval: {intervalSeconds} seconds
+              Background Change Interval: {formatSeconds(intervalSeconds)}
             </label>
             <input
               id="interval"
               type="range"
-              min="5"
-              max="180"
-              step="5"
+              min="60"
+              max="7200"
+              step="60"
               value={intervalSeconds}
               onChange={handleIntervalChange}
               className="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"

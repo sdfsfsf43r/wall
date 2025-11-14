@@ -25,7 +25,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
   return (
     <>
-      <div className="fixed bottom-5 w-full max-w-5xl px-4">
+      <div className="fixed bottom-10 w-full max-w-5xl px-4">
         <div className="relative flex items-center justify-between gap-6 rounded-2xl border border-white/20 bg-black/30 p-4 shadow-2xl backdrop-blur-xl">
           
           <div className="flex flex-1 items-center gap-4 min-w-0">

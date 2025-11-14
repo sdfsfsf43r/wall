@@ -296,6 +296,15 @@
               alert('Please paste your progress data into the text area.');
           }
         };
+        
+        const formatSeconds = (s) => {
+            if (s < 3600) {
+                const minutes = s / 60;
+                return `${minutes} minute${minutes > 1 ? 's' : ''}`;
+            }
+            const hours = s / 3600;
+            return `${hours} hour${hours > 1 ? 's' : ''}`;
+        };
 
         if (!isOpen) return null;
 
@@ -311,13 +320,13 @@
               React.createElement('h2', { className: "text-2xl font-bold mb-6" }, "Settings"),
               React.createElement('div', { className: "space-y-6" },
                 React.createElement('div', null,
-                  React.createElement('label', { htmlFor: "interval", className: "block text-sm font-medium text-white/80 mb-2" }, `Background Change Interval: ${intervalSeconds} seconds`),
+                  React.createElement('label', { htmlFor: "interval", className: "block text-sm font-medium text-white/80 mb-2" }, `Background Change Interval: ${formatSeconds(intervalSeconds)}`),
                   React.createElement('input', {
                     id: "interval",
                     type: "range",
-                    min: "5",
-                    max: "180",
-                    step: "5",
+                    min: "60",
+                    max: "7200",
+                    step: "60",
                     value: intervalSeconds,
                     onChange: handleIntervalChange,
                     className: "w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
@@ -361,7 +370,7 @@
 
         return (
           React.createElement(React.Fragment, null,
-            React.createElement('div', { className: "fixed bottom-5 w-full max-w-5xl px-4" },
+            React.createElement('div', { className: "fixed bottom-10 w-full max-w-5xl px-4" },
               React.createElement('div', { className: "relative flex items-center justify-between gap-6 rounded-2xl border border-white/20 bg-black/30 p-4 shadow-2xl backdrop-blur-xl" },
                 React.createElement('div', { className: "flex flex-1 items-center gap-4 min-w-0" },
                   React.createElement('img', { src: COURSE_DETAILS.thumbnail, alt: "Course Thumbnail", className: "h-20 w-32 rounded-lg object-cover flex-shrink-0" }),
@@ -398,7 +407,7 @@
       // --- App Component ---
       function App() {
         const { progress, incrementProgress, importProgress, exportProgress } = useProgress();
-        const [backgroundInterval, setBackgroundInterval] = useState(30000);
+        const [backgroundInterval, setBackgroundInterval] = useState(3600000); // 1 hour
         const [backgroundKey, setBackgroundKey] = useState(Date.now());
         const { quote, language, changeQuote, setLanguage, isRtl } = useQuotes();
 

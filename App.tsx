@@ -11,7 +11,7 @@ import { UDEMY_COURSE_URL } from './constants';
 
 function App() {
   const { progress, incrementProgress, importProgress, exportProgress } = useProgress();
-  const [backgroundInterval, setBackgroundInterval] = useState(30000); // 30 seconds
+  const [backgroundInterval, setBackgroundInterval] = useState(3600000); // 1 hour
   const [backgroundKey, setBackgroundKey] = useState(Date.now());
   const { quote, language, changeQuote, setLanguage, isRtl } = useQuotes();
 
