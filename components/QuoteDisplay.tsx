@@ -16,7 +16,7 @@ export const QuoteDisplay: React.FC<QuoteDisplayProps> = ({ quote, onQuoteClick,
       onClick={onQuoteClick}
       className="cursor-pointer text-center max-w-4xl px-4 transition-all duration-300 ease-in-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]"
       dir={directionClass}
-      title="Click to open course and log progress"
+      title="Click to open course"
     >
       <h1 className={`text-4xl md:text-5xl font-bold leading-tight tracking-wide ${fontClass}`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
         "{quote.text}"

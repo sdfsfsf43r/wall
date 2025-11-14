@@ -8,6 +8,7 @@ import { useProgress } from './hooks/useProgress';
 import { useQuotes } from './hooks/useQuotes';
 import { Language } from './types';
 import { UDEMY_COURSE_URL } from './constants';
+import { DailyChecklist } from './components/DailyChecklist';
 
 function App() {
   const { progress, incrementProgress, importProgress, exportProgress } = useProgress();
@@ -29,9 +30,8 @@ function App() {
 
   const handleQuoteClick = useCallback(() => {
     window.open(UDEMY_COURSE_URL, '_blank');
-    incrementProgress();
     changeQuote();
-  }, [incrementProgress, changeQuote]);
+  }, [changeQuote]);
 
   const handleLanguageToggle = () => {
     const newLang: Language = language === 'en' ? 'ar' : 'en';
@@ -47,8 +47,13 @@ function App() {
       <main className="relative z-10 flex h-full w-full flex-col items-center justify-center p-8">
         <Clock />
         
-        <div className="flex-grow flex items-center justify-center">
+        <div className="flex-grow flex flex-col items-center justify-center gap-8">
             <QuoteDisplay quote={quote} onQuoteClick={handleQuoteClick} isRtl={isRtl} />
+            <DailyChecklist
+              onCheck={incrementProgress}
+              lastClickDate={progress.lastClickDate}
+              language={language}
+            />
         </div>
 
         <ControlPanel

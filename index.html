@@ -229,7 +229,7 @@
             onClick: onQuoteClick,
             className: "cursor-pointer text-center max-w-4xl px-4 transition-all duration-300 ease-in-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]",
             dir: directionClass,
-            title: "Click to open course and log progress"
+            title: "Click to open course"
           }, 
             React.createElement('h1', {
               className: `text-4xl md:text-5xl font-bold leading-tight tracking-wide ${fontClass}`,
@@ -240,6 +240,73 @@
               style: { textShadow: '0 1px 4px rgba(0,0,0,0.7)' }
             }, `- ${quote.author}`)
           )
+        );
+      };
+
+      const DailyChecklist = ({ onCheck, lastClickDate, language }) => {
+        const calculateTimeRemaining = () => {
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(now.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            const diff = tomorrow.getTime() - now.getTime();
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        };
+
+        const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining());
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+        const isCheckedToday = lastClickDate === todayStr;
+
+        useEffect(() => {
+            if (isCheckedToday) {
+                const timerId = setInterval(() => {
+                    setTimeRemaining(calculateTimeRemaining());
+                }, 1000);
+                return () => clearInterval(timerId);
+            }
+        }, [isCheckedToday]);
+
+        const labels = {
+            en: {
+                checkbox: "I've completed my studies for today",
+                timer: "Next check-in available in:",
+            },
+            ar: {
+                checkbox: "لقد أكملت دراستي لهذا اليوم",
+                timer: "التسجيل التالي متاح في:",
+            },
+        };
+
+        const handleCheck = () => {
+            if (!isCheckedToday) {
+                onCheck();
+            }
+        };
+
+        return React.createElement('div', { className: "flex flex-col items-center gap-3 text-white/90", style: { textShadow: '0 1px 4px rgba(0,0,0,0.5)' } },
+            React.createElement('label', { className: "flex items-center gap-3 cursor-pointer text-lg" },
+                React.createElement('input', {
+                    type: "checkbox",
+                    checked: isCheckedToday,
+                    onChange: handleCheck,
+                    disabled: isCheckedToday,
+                    className: "sr-only peer"
+                }),
+                React.createElement('div', { className: "relative w-6 h-6 bg-white/20 rounded-md border-2 border-transparent peer-checked:bg-purple-600 peer-checked:border-purple-400 peer-disabled:cursor-not-allowed transition-all" },
+                    React.createElement('svg', { className: `absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-white transition-opacity ${isCheckedToday ? 'opacity-100' : 'opacity-0'}`, xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20", fill: "currentColor" },
+                        React.createElement('path', { fillRule: "evenodd", d: "M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z", clipRule: "evenodd" })
+                    )
+                ),
+                React.createElement('span', null, labels[language].checkbox)
+            ),
+            isCheckedToday && React.createElement('div', { className: "text-sm text-white/70" },
+                React.createElement('span', null, `${labels[language].timer} `),
+                React.createElement('span', { className: "font-mono font-semibold" }, timeRemaining)
+            )
         );
       };
 
@@ -425,9 +492,8 @@
 
         const handleQuoteClick = useCallback(() => {
           window.open(UDEMY_COURSE_URL, '_blank');
-          incrementProgress();
           changeQuote();
-        }, [incrementProgress, changeQuote]);
+        }, [changeQuote]);
 
         const handleLanguageToggle = () => {
           const newLang = language === 'en' ? 'ar' : 'en';
@@ -440,8 +506,13 @@
             React.createElement('div', { className: "absolute inset-0 bg-black/40" }),
             React.createElement('main', { className: "relative z-10 flex h-full w-full flex-col items-center justify-center p-8" },
               React.createElement(Clock, null),
-              React.createElement('div', { className: "flex-grow flex items-center justify-center" },
-                  React.createElement(QuoteDisplay, { quote: quote, onQuoteClick: handleQuoteClick, isRtl: isRtl })
+              React.createElement('div', { className: "flex-grow flex flex-col items-center justify-center gap-8" },
+                  React.createElement(QuoteDisplay, { quote: quote, onQuoteClick: handleQuoteClick, isRtl: isRtl }),
+                  React.createElement(DailyChecklist, { 
+                    onCheck: incrementProgress, 
+                    lastClickDate: progress.lastClickDate,
+                    language: language
+                  })
               ),
               React.createElement(ControlPanel, {
                 progress: progress,
