@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-M" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Udemy Motivational Wallpaper</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,6 +36,421 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module">
+      import React, { useState, useEffect, useCallback, useMemo } from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- Constants ---
+      const UDEMY_COURSE_URL = 'https://www.udemy.com/course/unrealcourse/learn/';
+      const COURSE_DETAILS = {
+        thumbnail: 'https://picsum.photos/seed/unrealcourse/200/120',
+        title: 'Unreal Engine 5 C++ Developer',
+        description: 'Learn C++ from basics to advanced while making your first 4 video games in Unreal Engine 5'
+      };
+      const MULTILINGUAL_QUOTES = [
+        { en: { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" }, ar: { text: "الطريقة الوحيدة لعمل أشياء عظيمة هي أن تحب ما تفعله.", author: "ستيف جوبز" } },
+        { en: { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" }, ar: { text: "آمن بأنك تستطيع وأنت بذلك قطعت نصف الطريق.", author: "ثيودور روزفلت" } },
+        { en: { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" }, ar: { text: "المستقبل ملك لأولئك الذين يؤمنون بجمال أحلامهم.", author: "إليانور روزفلت" } },
+        { en: { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" }, ar: { text: "النجاح ليس نهائياً، والفشل ليس قاتلاً: إنما الشجاعة على الاستمرار هي التي تهم.", author: "ونستون تشرشل" } },
+        { en: { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" }, ar: { text: "لا يهم مدى بطئك طالما أنك لا تتوقف.", author: "كونفوشيوس" } },
+        { en: { text: "Your limitation—it's only your imagination.", author: "Unknown" }, ar: { text: "حدودك هي فقط من صنع خيالك.", author: "مجهول" } },
+        { en: { text: "Push yourself, because no one else is going to do it for you.", author: "Unknown" }, ar: { text: "ادفع نفسك، لأنه لا أحد آخر سيفعل ذلك من أجلك.", author: "مجهول" } },
+        { en: { text: "Great things never come from comfort zones.", author: "Unknown" }, ar: { text: "الأشياء العظيمة لا تأتي أبداً من مناطق الراحة.", author: "مجهول" } },
+        { en: { text: "Dream it. Wish it. Do it.", author: "Unknown" }, ar: { text: "احلم به. تمناه. افعله.", author: "مجهول" } },
+        { en: { text: "Success doesn’t just find you. You have to go out and get it.", author: "Unknown" }, ar: { text: "النجاح لا يجدك. عليك أن تخرج وتحصل عليه.", author: "مجهول" } },
+        { en: { text: "The harder you work for something, the greater you’ll feel when you achieve it.", author: "Unknown" }, ar: { text: "كلما عملت بجد من أجل شيء ما، كلما شعرت بالرضا عند تحقيقه.", author: "مجهول" } },
+        { en: { text: "Don’t wait for opportunity. Create it.", author: "Unknown" }, ar: { text: "لا تنتظر الفرصة. اصنعها.", author: "مجهول" } },
+        { en: { text: "Wake up with determination. Go to bed with satisfaction.", author: "Unknown" }, ar: { text: "استيقظ بتصميم. اذهب إلى الفراش بالرضا.", author: "مجهول" } },
+        { en: { text: "Do something today that your future self will thank you for.", author: "Sean Patrick Flanery" }, ar: { text: "افعل شيئاً اليوم يشكرك عليه مستقبلك.", author: "شون باتريك فلانيري" } },
+        { en: { text: "It’s going to be hard, but hard does not mean impossible.", author: "Unknown" }, ar: { text: "سيكون الأمر صعباً، لكن الصعب لا يعني المستحيل.", author: "مجهول" } },
+      ];
+
+      // --- Hooks ---
+      const PROGRESS_STORAGE_KEY = 'udemyWallpaperProgress';
+      const DEFAULT_GOAL = 365;
+
+      function useProgress() {
+        const [progress, setProgress] = useState(() => {
+          try {
+            const saved = localStorage.getItem(PROGRESS_STORAGE_KEY);
+            if (saved) {
+              const parsed = JSON.parse(saved);
+              if (typeof parsed.daysDone === 'number' && typeof parsed.goal === 'number') {
+                  return { ...parsed, streak: parsed.streak || 0 };
+              }
+            }
+          } catch (error) {
+            console.error('Error loading progress from localStorage:', error);
+          }
+          return { daysDone: 0, goal: DEFAULT_GOAL, lastClickDate: null, streak: 0 };
+        });
+
+        useEffect(() => {
+          try {
+            localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(progress));
+          } catch (error) {
+            console.error('Error saving progress to localStorage:', error);
+          }
+        }, [progress]);
+
+        const incrementProgress = useCallback(() => {
+          const today = new Date();
+          const yesterday = new Date();
+          yesterday.setDate(today.getDate() - 1);
+          const todayStr = today.toISOString().split('T')[0];
+          const yesterdayStr = yesterday.toISOString().split('T')[0];
+          
+          if (progress.lastClickDate !== todayStr) {
+            setProgress(prev => {
+              const isConsecutive = prev.lastClickDate === yesterdayStr;
+              const newStreak = isConsecutive ? (prev.streak || 0) + 1 : 1;
+              return ({
+                  ...prev,
+                  daysDone: Math.min(prev.daysDone + 1, prev.goal),
+                  lastClickDate: todayStr,
+                  streak: newStreak,
+              });
+            });
+          } else {
+              console.log("Progress already logged for today.");
+          }
+        }, [progress.lastClickDate, progress.goal, progress.streak]);
+
+        const importProgress = useCallback((jsonString) => {
+          try {
+              const data = JSON.parse(jsonString);
+              if (typeof data.daysDone === 'number' && typeof data.lastClickDate === 'string') {
+                  setProgress(prev => ({ ...prev, ...data, streak: data.streak || 0 }));
+                  alert('Progress imported successfully!');
+              } else {
+                  throw new Error('Invalid data format');
+              }
+          } catch (error) {
+              console.error('Failed to import progress:', error);
+              alert('Failed to import progress. Please check the data format.');
+          }
+        }, []);
+
+        const exportProgress = useCallback(() => {
+          try {
+              const { daysDone, lastClickDate, streak } = progress;
+              const exportData = JSON.stringify({ daysDone, lastClickDate, streak }, null, 2);
+              navigator.clipboard.writeText(exportData);
+              alert('Progress data copied to clipboard!');
+          } catch (error) {
+              console.error('Failed to copy progress to clipboard:', error);
+              alert('Failed to copy progress data.');
+          }
+        }, [progress]);
+        
+        return { progress, incrementProgress, importProgress, exportProgress };
+      }
+
+      const getRandomMultilingualQuote = () => {
+        return MULTILINGUAL_QUOTES[Math.floor(Math.random() * MULTILINGUAL_QUOTES.length)];
+      };
+
+      function useQuotes() {
+        const [language, setLanguage] = useState('en');
+        const [activeQuote, setActiveQuote] = useState(() => getRandomMultilingualQuote());
+
+        const changeQuote = useCallback(() => {
+          setActiveQuote(getRandomMultilingualQuote());
+        }, []);
+        
+        const handleSetLanguage = useCallback((newLang) => {
+          setLanguage(newLang);
+        }, []);
+
+        const quote = useMemo(() => activeQuote[language], [activeQuote, language]);
+        const isRtl = useMemo(() => language === 'ar', [language]);
+
+        return { quote, language, setLanguage: handleSetLanguage, changeQuote, isRtl };
+      }
+
+      // --- Components ---
+      const Background = () => {
+        const [imageUrl, setImageUrl] = useState('');
+        const [isLoading, setIsLoading] = useState(true);
+
+        useEffect(() => {
+          setIsLoading(true);
+          const newImageUrl = `https://picsum.photos/1920/1080?random=${Date.now()}`;
+          
+          const img = new Image();
+          img.src = newImageUrl;
+          img.onload = () => {
+            setImageUrl(newImageUrl);
+            setIsLoading(false);
+          };
+        }, []);
+
+        return (
+          React.createElement('div', {
+            className: `absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${isLoading ? 'opacity-0' : 'opacity-100'}`,
+            style: { backgroundImage: `url(${imageUrl})` },
+            'aria-label': "Dynamic background image"
+          })
+        );
+      };
+
+      const Clock = () => {
+        const [time, setTime] = useState(new Date());
+
+        useEffect(() => {
+          const timerId = setInterval(() => {
+            setTime(new Date());
+          }, 1000);
+
+          return () => clearInterval(timerId);
+        }, []);
+
+        return (
+          React.createElement('div', {
+            className: "absolute top-5 left-5 text-4xl font-semibold text-white/90",
+            style: { textShadow: '0 2px 4px rgba(0,0,0,0.5)' }
+          }, time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }))
+        );
+      };
+
+      const QuoteDisplay = ({ quote, onQuoteClick, isRtl }) => {
+        const directionClass = isRtl ? 'rtl' : 'ltr';
+        const fontClass = isRtl ? 'font-cairo' : '';
+
+        return (
+          React.createElement('div', {
+            onClick: onQuoteClick,
+            className: "cursor-pointer text-center max-w-4xl px-4 transition-all duration-300 ease-in-out hover:scale-[1.03] hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]",
+            dir: directionClass,
+            title: "Click to open course and log progress"
+          }, 
+            React.createElement('h1', {
+              className: `text-4xl md:text-5xl font-bold leading-tight tracking-wide ${fontClass}`,
+              style: { textShadow: '0 2px 8px rgba(0,0,0,0.7)' }
+            }, `"${quote.text}"`),
+            quote.author && React.createElement('p', {
+              className: `mt-4 text-xl text-white/80 ${fontClass}`,
+              style: { textShadow: '0 1px 4px rgba(0,0,0,0.7)' }
+            }, `- ${quote.author}`)
+          )
+        );
+      };
+
+      const ProgressTracker = ({ progress }) => {
+        const percentage = progress.goal > 0 ? (progress.daysDone / progress.goal) * 100 : 0;
+        const displayPercentage = percentage.toFixed(1);
+
+        return (
+          React.createElement('div', { className: "w-full" },
+            React.createElement('div', { className: "flex justify-between items-center text-sm font-medium text-white/80 mb-1" },
+              React.createElement('span', null, 'Daily Progress'),
+              React.createElement('div', { className: "flex items-center gap-3" },
+                progress.streak > 0 && React.createElement('span', {
+                  className: "streak-pulse flex items-center gap-1 text-lg font-bold text-orange-400 drop-shadow-[0_0_5px_rgba(251,146,60,0.7)]",
+                  title: `${progress.streak} Day Streak`
+                },
+                  React.createElement('span', null, progress.streak),
+                  React.createElement('span', null, '🔥')
+                ),
+                React.createElement('span', null, `Day ${progress.daysDone} / ${progress.goal}`)
+              )
+            ),
+            React.createElement('div', { className: "w-full bg-white/20 rounded-full h-2.5" },
+              React.createElement('div', {
+                className: "bg-gradient-to-r from-blue-500 to-purple-500 h-2.5 rounded-full transition-all duration-500 ease-out",
+                style: { width: `${percentage}%` }
+              })
+            ),
+            React.createElement('div', { className: "text-right text-xs mt-1 font-semibold text-white/90" }, `${displayPercentage}% Complete`)
+          )
+        );
+      };
+
+      const SettingsModal = ({ isOpen, onClose, backgroundInterval, setBackgroundInterval, onImport, onExport }) => {
+        const [intervalSeconds, setIntervalSeconds] = useState(backgroundInterval / 1000);
+        const [importJson, setImportJson] = useState('');
+
+        useEffect(() => {
+          setIntervalSeconds(backgroundInterval / 1000);
+        }, [backgroundInterval]);
+
+        const handleIntervalChange = (e) => {
+          const value = parseInt(e.target.value, 10);
+          setIntervalSeconds(value);
+          setBackgroundInterval(value * 1000);
+        };
+        
+        const handleImportClick = () => {
+          if (importJson.trim()) {
+              onImport(importJson);
+              setImportJson('');
+              onClose();
+          } else {
+              alert('Please paste your progress data into the text area.');
+          }
+        };
+
+        if (!isOpen) return null;
+
+        return (
+          React.createElement('div', {
+            className: "fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm",
+            onClick: onClose
+          },
+            React.createElement('div', {
+              className: "w-full max-w-md rounded-2xl border border-white/20 bg-gray-800/80 p-6 shadow-2xl",
+              onClick: e => e.stopPropagation()
+            },
+              React.createElement('h2', { className: "text-2xl font-bold mb-6" }, "Settings"),
+              React.createElement('div', { className: "space-y-6" },
+                React.createElement('div', null,
+                  React.createElement('label', { htmlFor: "interval", className: "block text-sm font-medium text-white/80 mb-2" }, `Background Change Interval: ${intervalSeconds} seconds`),
+                  React.createElement('input', {
+                    id: "interval",
+                    type: "range",
+                    min: "5",
+                    max: "180",
+                    step: "5",
+                    value: intervalSeconds,
+                    onChange: handleIntervalChange,
+                    className: "w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                  })
+                ),
+                React.createElement('div', null,
+                  React.createElement('h3', { className: "text-lg font-semibold mb-2" }, "Import / Export Progress"),
+                  React.createElement('div', { className: "flex gap-4" },
+                    React.createElement('button', { onClick: onExport, className: "flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-semibold" }, "Export Progress")
+                  ),
+                  React.createElement('div', { className: "mt-4" },
+                    React.createElement('textarea', {
+                      value: importJson,
+                      onChange: (e) => setImportJson(e.target.value),
+                      placeholder: 'Paste your exported progress data here...',
+                      className: "w-full p-2 bg-gray-900/50 rounded-lg border border-white/20 text-sm h-24 resize-none focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    }),
+                    React.createElement('button', { onClick: handleImportClick, className: "w-full mt-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-sm font-semibold" }, "Import Progress")
+                  )
+                )
+              ),
+              React.createElement('button', { onClick: onClose, className: "absolute top-4 right-4 text-white/50 hover:text-white transition-colors" },
+                React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+                  React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" })
+                )
+              )
+            )
+          )
+        );
+      };
+
+      const SettingsIcon = () => (
+        React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-6 w-6", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+          React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" }),
+          React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" })
+        )
+      );
+
+      const ControlPanel = (props) => {
+        const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+        return (
+          React.createElement(React.Fragment, null,
+            React.createElement('div', { className: "fixed bottom-5 w-full max-w-5xl px-4" },
+              React.createElement('div', { className: "relative flex items-center justify-between gap-6 rounded-2xl border border-white/20 bg-black/30 p-4 shadow-2xl backdrop-blur-xl" },
+                React.createElement('div', { className: "flex items-center gap-4" },
+                  React.createElement('img', { src: COURSE_DETAILS.thumbnail, alt: "Course Thumbnail", className: "h-20 w-32 rounded-lg object-cover" }),
+                  React.createElement('div', null,
+                    React.createElement('h2', { className: "text-lg font-bold" }, COURSE_DETAILS.title),
+                    React.createElement('p', { className: "text-sm text-white/70 hidden md:block" }, COURSE_DETAILS.description)
+                  )
+                ),
+                React.createElement('div', { className: "flex-1 max-w-xs" },
+                  React.createElement(ProgressTracker, { progress: props.progress })
+                ),
+                React.createElement('div', { className: "flex items-center gap-2" },
+                  React.createElement('a', { href: UDEMY_COURSE_URL, target: "_blank", rel: "noopener noreferrer", className: "px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors text-sm font-semibold" }, "Open Course"),
+                  React.createElement('button', { onClick: props.onNextBackground, className: "px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm font-semibold" }, "Next BG"),
+                  React.createElement('button', { onClick: props.onLanguageToggle, className: "px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-sm font-bold uppercase" }, props.currentLanguage),
+                  React.createElement('button', { onClick: () => setIsSettingsOpen(true), className: "p-2.5 bg-white/10 hover:bg-white/20 rounded-lg transition-colors" },
+                    React.createElement(SettingsIcon, null)
+                  )
+                )
+              )
+            ),
+            React.createElement(SettingsModal, {
+              isOpen: isSettingsOpen,
+              onClose: () => setIsSettingsOpen(false),
+              backgroundInterval: props.backgroundInterval,
+              setBackgroundInterval: props.setBackgroundInterval,
+              onImport: props.onImport,
+              onExport: props.onExport
+            })
+          )
+        );
+      };
+
+      // --- App Component ---
+      function App() {
+        const { progress, incrementProgress, importProgress, exportProgress } = useProgress();
+        const [backgroundInterval, setBackgroundInterval] = useState(30000);
+        const [backgroundKey, setBackgroundKey] = useState(Date.now());
+        const { quote, language, changeQuote, setLanguage, isRtl } = useQuotes();
+
+        const handleNextBackground = useCallback(() => {
+          setBackgroundKey(Date.now());
+        }, []);
+
+        useEffect(() => {
+          const intervalId = setInterval(() => {
+            handleNextBackground();
+          }, backgroundInterval);
+
+          return () => clearInterval(intervalId);
+        }, [backgroundInterval, handleNextBackground]);
+
+        const handleQuoteClick = useCallback(() => {
+          window.open(UDEMY_COURSE_URL, '_blank');
+          incrementProgress();
+          changeQuote();
+        }, [incrementProgress, changeQuote]);
+
+        const handleLanguageToggle = () => {
+          const newLang = language === 'en' ? 'ar' : 'en';
+          setLanguage(newLang);
+        };
+        
+        return (
+          React.createElement('div', { className: "relative h-screen w-screen overflow-hidden bg-black text-white" },
+            React.createElement(Background, { key: backgroundKey }),
+            React.createElement('div', { className: "absolute inset-0 bg-black/40" }),
+            React.createElement('main', { className: "relative z-10 flex h-full w-full flex-col items-center justify-center p-8" },
+              React.createElement(Clock, null),
+              React.createElement('div', { className: "flex-grow flex items-center justify-center" },
+                  React.createElement(QuoteDisplay, { quote: quote, onQuoteClick: handleQuoteClick, isRtl: isRtl })
+              ),
+              React.createElement(ControlPanel, {
+                progress: progress,
+                onNextBackground: handleNextBackground,
+                backgroundInterval: backgroundInterval,
+                setBackgroundInterval: setBackgroundInterval,
+                onLanguageToggle: handleLanguageToggle,
+                currentLanguage: language,
+                onImport: importProgress,
+                onExport: exportProgress
+              })
+            )
+          )
+        );
+      }
+
+      // --- Mount App ---
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
+      }
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(
+        React.createElement(React.StrictMode, null, React.createElement(App, null))
+      );
+    </script>
   </body>
 </html>
